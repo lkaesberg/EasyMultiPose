@@ -1,0 +1,6 @@
+[submodule "cosypose"]
+	path = cosypose
+	url = https://github.com/ylabbe/cosypose.git
+[submodule "efficientpose"]
+	path = efficientpose
+	url = https://github.com/ybkscht/EfficientPose.git
