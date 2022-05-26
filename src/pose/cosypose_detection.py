@@ -4,17 +4,20 @@ import torch
 import yaml
 from PIL import Image
 import numpy as np
-from cosypose.easypose.pose.pose_detection import PoseDetection
-from cosypose.datasets.datasets_cfg import make_object_dataset
-from cosypose.integrated.detector import Detector
-from cosypose.integrated.pose_predictor import CoarseRefinePosePredictor
-from cosypose.lib3d.rigid_mesh_database import MeshDataBase
-from cosypose.rendering.bullet_batch_renderer import BulletBatchRenderer
 
-from cosypose.training.detector_models_cfg import check_update_config as check_update_config_detector
-from cosypose.training.pose_models_cfg import check_update_config as check_update_config_pose, create_model_refiner, \
+from cosypose.cosypose.datasets.bop_object_datasets import BOPObjectDataset
+from src.pose.pose_detection import PoseDetection
+from cosypose.cosypose.datasets.datasets_cfg import make_object_dataset
+from cosypose.cosypose.integrated.detector import Detector
+from cosypose.cosypose.integrated.pose_predictor import CoarseRefinePosePredictor
+from cosypose.cosypose.lib3d.rigid_mesh_database import MeshDataBase
+from cosypose.cosypose.rendering.bullet_batch_renderer import BulletBatchRenderer
+
+from cosypose.cosypose.training.detector_models_cfg import check_update_config as check_update_config_detector
+from cosypose.cosypose.training.pose_models_cfg import check_update_config as check_update_config_pose, \
+    create_model_refiner, \
     create_model_coarse
-from cosypose.training.detector_models_cfg import create_model_detector
+from cosypose.cosypose.training.detector_models_cfg import create_model_detector
 
 torch.backends.cudnn.deterministic = True
 torch.backends.cudnn.benchmark = False
@@ -35,12 +38,11 @@ def load_detector(path):
     return model
 
 
-def load_pose_models(coarse_path, refiner_path=None, n_workers=8):
+def load_pose_models(models_path, coarse_path, refiner_path=None, n_workers=8):
     cfg_path = Path(coarse_path + '/config.yaml')
     cfg = yaml.load(cfg_path.read_text(), Loader=yaml.FullLoader)
     cfg = check_update_config_pose(cfg)
-    # object_ds = BOPObjectDataset(BOP_DS_DIR / 'tless/models_cad')
-    object_ds = make_object_dataset(cfg.object_ds_name)
+    object_ds = BOPObjectDataset(Path(models_path))
     mesh_db = MeshDataBase.from_object_ds(object_ds)
     renderer = BulletBatchRenderer(object_set=cfg.urdf_ds_name, n_workers=n_workers)
     mesh_db_batched = mesh_db.batched().cuda()
@@ -94,9 +96,9 @@ def inference(detector, pose_predictor, image, camera_k):
 
 class CosyposeDetection(PoseDetection):
 
-    def __init__(self, detector_path, coarse_path, refiner_path=None):
+    def __init__(self, models_path, detector_path, coarse_path, refiner_path=None):
         self.detector = load_detector(detector_path)
-        self.model, _ = load_pose_models(coarse_path, refiner_path, 4)
+        self.model, _ = load_pose_models(models_path, coarse_path, refiner_path, 4)
 
     def detect(self, image, camera):
         return inference(self.detector, self.model, image, camera)
@@ -104,6 +106,7 @@ class CosyposeDetection(PoseDetection):
 
 if __name__ == '__main__':
     cosypose_detector = CosyposeDetection(
+        models_path="/media/lars/Volume/Bachelor/Projekte/cosypose/local_data/bop_datasets/ycbv/models",
         detector_path="/media/lars/Volume/Bachelor/Projekte/cosypose/local_data/experiments/detector-bop-ycbv-pbr--970850",
         coarse_path="/media/lars/Volume/Bachelor/Projekte/cosypose/local_data/experiments/coarse-bop-ycbv-pbr--724183",
         refiner_path="/media/lars/Volume/Bachelor/Projekte/cosypose/local_data/experiments/refiner-bop-ycbv-pbr--604090")
