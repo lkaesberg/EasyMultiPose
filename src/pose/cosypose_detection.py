@@ -5,20 +5,20 @@ import yaml
 from PIL import Image
 import numpy as np
 
-from cosypose.cosypose.datasets.bop_object_datasets import BOPObjectDataset
-from cosypose.cosypose.scripts.convert_models_to_urdf import convert_obj_dataset_to_urdfs_abs_path
+from cosypose.datasets.bop_object_datasets import BOPObjectDataset
+from cosypose.scripts.convert_models_to_urdf import convert_obj_dataset_to_urdfs_abs_path
 from src.pose.pose_detection import PoseDetection
-from cosypose.cosypose.datasets.datasets_cfg import make_object_dataset
-from cosypose.cosypose.integrated.detector import Detector
-from cosypose.cosypose.integrated.pose_predictor import CoarseRefinePosePredictor
-from cosypose.cosypose.lib3d.rigid_mesh_database import MeshDataBase
-from cosypose.cosypose.rendering.bullet_batch_renderer import BulletBatchRenderer
+from cosypose.datasets.datasets_cfg import make_object_dataset
+from cosypose.integrated.detector import Detector
+from cosypose.integrated.pose_predictor import CoarseRefinePosePredictor
+from cosypose.lib3d.rigid_mesh_database import MeshDataBase
+from cosypose.rendering.bullet_batch_renderer import BulletBatchRenderer
 
-from cosypose.cosypose.training.detector_models_cfg import check_update_config as check_update_config_detector
-from cosypose.cosypose.training.pose_models_cfg import check_update_config as check_update_config_pose, \
+from cosypose.training.detector_models_cfg import check_update_config as check_update_config_detector
+from cosypose.training.pose_models_cfg import check_update_config as check_update_config_pose, \
     create_model_refiner, \
     create_model_coarse
-from cosypose.cosypose.training.detector_models_cfg import create_model_detector
+from cosypose.training.detector_models_cfg import create_model_detector
 from src.urdf_cfg import set_urdf_path
 
 torch.backends.cudnn.deterministic = True
