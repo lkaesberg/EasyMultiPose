@@ -6,6 +6,7 @@ from PIL import Image
 import numpy as np
 
 from cosypose.cosypose.datasets.bop_object_datasets import BOPObjectDataset
+from cosypose.cosypose.scripts.convert_models_to_urdf import convert_obj_dataset_to_urdfs_abs_path
 from src.pose.pose_detection import PoseDetection
 from cosypose.cosypose.datasets.datasets_cfg import make_object_dataset
 from cosypose.cosypose.integrated.detector import Detector
@@ -18,17 +19,18 @@ from cosypose.cosypose.training.pose_models_cfg import check_update_config as ch
     create_model_refiner, \
     create_model_coarse
 from cosypose.cosypose.training.detector_models_cfg import create_model_detector
+from src.urdf_cfg import set_urdf_path
 
 torch.backends.cudnn.deterministic = True
 torch.backends.cudnn.benchmark = False
 
 
 def load_detector(path):
-    cfg = yaml.load(Path(path + '/config.yaml').read_text(), Loader=yaml.FullLoader)
+    cfg = yaml.load((path / 'config.yaml').read_text(), Loader=yaml.FullLoader)
     cfg = check_update_config_detector(cfg)
     label_to_category_id = cfg.label_to_category_id
     model = create_model_detector(cfg, len(label_to_category_id))
-    ckpt = torch.load(Path(path + '/checkpoint.pth.tar'))
+    ckpt = torch.load(path / 'checkpoint.pth.tar')
     ckpt = ckpt['state_dict']
     model.load_state_dict(ckpt)
     model = model.cuda().eval()
@@ -39,10 +41,10 @@ def load_detector(path):
 
 
 def load_pose_models(models_path, coarse_path, refiner_path=None, n_workers=8):
-    cfg_path = Path(coarse_path + '/config.yaml')
+    cfg_path = coarse_path / 'config.yaml'
     cfg = yaml.load(cfg_path.read_text(), Loader=yaml.FullLoader)
     cfg = check_update_config_pose(cfg)
-    object_ds = BOPObjectDataset(Path(models_path))
+    object_ds = BOPObjectDataset(models_path)
     mesh_db = MeshDataBase.from_object_ds(object_ds)
     renderer = BulletBatchRenderer(object_set=cfg.urdf_ds_name, n_workers=n_workers)
     mesh_db_batched = mesh_db.batched().cuda()
@@ -50,14 +52,14 @@ def load_pose_models(models_path, coarse_path, refiner_path=None, n_workers=8):
     def load_model(path):
         if path is None:
             return
-        cfg_path = Path(path + '/config.yaml')
+        cfg_path = path / 'config.yaml'
         cfg = yaml.load(cfg_path.read_text(), Loader=yaml.FullLoader)
         cfg = check_update_config_pose(cfg)
         if cfg.train_refiner:
             model = create_model_refiner(cfg, renderer=renderer, mesh_db=mesh_db_batched)
         else:
             model = create_model_coarse(cfg, renderer=renderer, mesh_db=mesh_db_batched)
-        ckpt_path = Path(path + '/checkpoint.pth.tar')
+        ckpt_path = path / 'checkpoint.pth.tar'
         ckpt = torch.load(ckpt_path)
         ckpt = ckpt['state_dict']
         model.load_state_dict(ckpt)
@@ -97,8 +99,13 @@ def inference(detector, pose_predictor, image, camera_k):
 class CosyposeDetection(PoseDetection):
 
     def __init__(self, models_path, detector_path, coarse_path, refiner_path=None):
-        self.detector = load_detector(detector_path)
-        self.model, _ = load_pose_models(models_path, coarse_path, refiner_path, 4)
+        models_path = Path(models_path)
+        urdf_path = models_path / 'urdfs'
+        if not urdf_path.exists():
+            convert_obj_dataset_to_urdfs_abs_path(models_path)
+        set_urdf_path(urdf_path)
+        self.detector = load_detector(Path(detector_path))
+        self.model, _ = load_pose_models(models_path, Path(coarse_path), Path(refiner_path), 4)
 
     def detect(self, image, camera):
         return inference(self.detector, self.model, image, camera)
