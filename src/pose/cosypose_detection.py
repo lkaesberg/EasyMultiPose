@@ -1,4 +1,5 @@
 from pathlib import Path
+from typing import Dict, Any, Tuple
 
 import torch
 import yaml
@@ -108,7 +109,12 @@ class CosyposeDetection(PoseDetection):
         self.model, _ = load_pose_models(models_path, Path(coarse_path), Path(refiner_path), 4)
 
     def detect(self, image, camera):
-        return inference(self.detector, self.model, image, camera)
+        data = inference(self.detector, self.model, image, camera)
+        predictions = {}
+        for i in range(len(data)):
+            pose = data.poses[i].numpy()
+            predictions[data.infos.iloc[i].label] = (pose, data.infos.iloc[i].score)
+        return predictions
 
 
 if __name__ == '__main__':
@@ -123,8 +129,4 @@ if __name__ == '__main__':
     camera_k = np.array([[585.75607, 0, 320.5], \
                          [0, 585.75607, 240.5], \
                          [0, 0, 1, ]])
-    pred = cosypose_detector.detect(img, camera_k)
-    print("num of pred:", len(pred))
-    for i in range(len(pred)):
-        print("object ", i, ":", pred.infos.iloc[i].label, "------\n  pose:", pred.poses[i].numpy(),
-              "\n  detection score:", pred.infos.iloc[i].score)
+    print(cosypose_detector.detect(img, camera_k))
