@@ -111,6 +111,8 @@ class CosyposeDetection(PoseDetection):
     def detect(self, image, camera):
         data = inference(self.detector, self.model, image, camera)
         predictions = {}
+        if not data:
+            return None
         for i in range(len(data)):
             pose = data.poses[i].numpy()
             predictions[data.infos.iloc[i].label] = (pose, data.infos.iloc[i].score)
@@ -123,7 +125,7 @@ if __name__ == '__main__':
         detector_path="/media/lars/Volume/Bachelor/Projekte/models/test_det",
         coarse_path="/media/lars/Volume/Bachelor/Projekte/cosypose/local_data/experiments/coarse-bop-ycbv-pbr--724183",
         refiner_path="/media/lars/Volume/Bachelor/Projekte/cosypose/local_data/experiments/refiner-bop-ycbv-pbr--604090")
-    path = "/media/lars/Volume/Bachelor/Projekte/cosypose/local_data/bop_datasets/ycbv/train_real/000000/rgb/000001.png"
+    path = "/home/lars/Downloads/csm_fertighaus-bauen-startseiten-bild_d13e0ec91d.jpg"
     img = Image.open(path)
     img = np.array(img)
     camera_k = np.array([[585.75607, 0, 320.5], \
