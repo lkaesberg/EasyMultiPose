@@ -1,26 +1,23 @@
 from pathlib import Path
-from typing import Dict, Any, Tuple
 
+import numpy as np
 import torch
 import yaml
 from PIL import Image
-import numpy as np
-
 from cosypose.datasets.bop_object_datasets import BOPObjectDataset
-from cosypose.scripts.convert_models_to_urdf import convert_obj_dataset_to_urdfs_abs_path
-from src.pose.pose_detection import PoseDetection
-from cosypose.datasets.datasets_cfg import make_object_dataset
 from cosypose.integrated.detector import Detector
 from cosypose.integrated.pose_predictor import CoarseRefinePosePredictor
 from cosypose.lib3d.rigid_mesh_database import MeshDataBase
 from cosypose.rendering.bullet_batch_renderer import BulletBatchRenderer
-
+from cosypose.scripts.convert_models_to_urdf import convert_obj_dataset_to_urdfs_abs_path
 from cosypose.training.detector_models_cfg import check_update_config as check_update_config_detector
+from cosypose.training.detector_models_cfg import create_model_detector
 from cosypose.training.pose_models_cfg import check_update_config as check_update_config_pose, \
     create_model_refiner, \
     create_model_coarse
-from cosypose.training.detector_models_cfg import create_model_detector
-from src.urdf_cfg import set_urdf_path
+
+from easymultipose.pose.pose_detection import PoseDetection
+from easymultipose.urdf_cfg import set_urdf_path
 
 torch.backends.cudnn.deterministic = True
 torch.backends.cudnn.benchmark = False
@@ -106,7 +103,10 @@ class CosyposeDetection(PoseDetection):
             convert_obj_dataset_to_urdfs_abs_path(models_path)
         set_urdf_path(urdf_path)
         self.detector = load_detector(Path(detector_path))
-        self.model, _ = load_pose_models(models_path, Path(coarse_path), Path(refiner_path), 4)
+        if refiner_path:
+            self.model, _ = load_pose_models(models_path, Path(coarse_path), Path(refiner_path), 4)
+        else:
+            self.model, _ = load_pose_models(models_path, Path(coarse_path), Path(refiner_path), 4)
 
     def detect(self, image, camera):
         data = inference(self.detector, self.model, image, camera)
@@ -120,7 +120,7 @@ class CosyposeDetection(PoseDetection):
 if __name__ == '__main__':
     cosypose_detector = CosyposeDetection(
         models_path="/media/lars/Volume/Bachelor/Projekte/cosypose/local_data/bop_datasets/ycbv/models",
-        detector_path="/media/lars/Volume/Bachelor/Projekte/cosypose/local_data/experiments/detector-bop-ycbv-pbr--970850",
+        detector_path="/media/lars/Volume/Bachelor/Projekte/models/test_det",
         coarse_path="/media/lars/Volume/Bachelor/Projekte/cosypose/local_data/experiments/coarse-bop-ycbv-pbr--724183",
         refiner_path="/media/lars/Volume/Bachelor/Projekte/cosypose/local_data/experiments/refiner-bop-ycbv-pbr--604090")
     path = "/media/lars/Volume/Bachelor/Projekte/cosypose/local_data/bop_datasets/ycbv/train_real/000000/rgb/000001.png"
