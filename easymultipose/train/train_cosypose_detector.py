@@ -67,12 +67,12 @@ def train_cosypose_detector():
     cfg.resume_run_id = None
 
     cfg.train_ds_names = [
-        (Path("/media/lars/Volume/Bachelor/Projekte/cosypose/local_data/bop_datasets/ycbv"), "train_synt", 3)]
+        (Path("/home/lars/Unity/6dposeestimation-datasetprovider/bop_dataset"), "train", 3)]
     cfg.val_ds_names = cfg.train_ds_names
 
-    cfg.run_id = Path("/media/lars/Volume/Bachelor/Projekte/models/test_det")
+    cfg.run_id = Path("/home/lars/Python/model")
 
-    cfg.voc_folder = Path("/media/lars/Volume/Bachelor/Projekte/cosypose/local_data/VOCdevkit/VOC2012")
+    cfg.voc_folder = Path("/media/lars/Volume/Bachelor/VOCdevkit/VOC2012")
 
     train_detector(cfg)
 
