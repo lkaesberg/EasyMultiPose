@@ -15,6 +15,7 @@ from cosypose.training.detector_models_cfg import create_model_detector
 from cosypose.training.pose_models_cfg import check_update_config as check_update_config_pose, \
     create_model_refiner, \
     create_model_coarse
+from easymultipose.pose.merge_poses import merge_poses
 
 from easymultipose.pose.pose_detection import PoseDetection
 from easymultipose.urdf_cfg import set_urdf_path
@@ -121,14 +122,17 @@ class CosyposeDetection(PoseDetection):
 
 if __name__ == '__main__':
     cosypose_detector = CosyposeDetection(
-        models_path="/media/lars/Volume/Bachelor/Projekte/cosypose/local_data/bop_datasets/ycbv/models",
-        detector_path="/media/lars/Volume/Bachelor/Projekte/models/test_det",
-        coarse_path="/media/lars/Volume/Bachelor/Projekte/cosypose/local_data/experiments/coarse-bop-ycbv-pbr--724183",
-        refiner_path="/media/lars/Volume/Bachelor/Projekte/cosypose/local_data/experiments/refiner-bop-ycbv-pbr--604090")
-    path = "/home/lars/Downloads/csm_fertighaus-bauen-startseiten-bild_d13e0ec91d.jpg"
+        models_path="/home/lars/PycharmProjects/EasyMultiPose/cosypose/local_data/bop_datasets/ycbv/models_bop-compat",
+        detector_path="/home/lars/PycharmProjects/EasyMultiPose/cosypose/local_data/experiments/detector-bop-ycbv-pbr--970850",
+        coarse_path="/home/lars/PycharmProjects/EasyMultiPose/cosypose/local_data/experiments/coarse-bop-ycbv-pbr--724183",
+        refiner_path="/home/lars/PycharmProjects/EasyMultiPose/cosypose/local_data/experiments/refiner-bop-ycbv-pbr--604090")
+    path = "/home/lars/Downloads/images.jpeg"
     img = Image.open(path)
     img = np.array(img)
     camera_k = np.array([[585.75607, 0, 320.5], \
                          [0, 585.75607, 240.5], \
                          [0, 0, 1, ]])
-    print(cosypose_detector.detect(img, camera_k))
+    detection = cosypose_detector.detect(img, camera_k)
+    print(detection)
+    print()
+    print(merge_poses({"1": detection}, {"1": camera_k}))
