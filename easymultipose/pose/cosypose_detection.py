@@ -135,4 +135,5 @@ if __name__ == '__main__':
     detection = cosypose_detector.detect(img, camera_k)
     print(detection)
     print()
-    print(merge_poses({"1": detection}, {"1": camera_k}))
+    print(merge_poses({1: detection}, {1: camera_k}, Path(
+        "/home/lars/PycharmProjects/EasyMultiPose/cosypose/local_data/bop_datasets/ycbv/models_bop-compat")))

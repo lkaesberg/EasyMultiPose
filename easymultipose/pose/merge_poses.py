@@ -2,6 +2,9 @@ import numpy as np
 import pandas as pd
 import torch
 import cosypose.utils.tensor_collection as tc
+from cosypose.datasets.bop_object_datasets import BOPObjectDataset
+from cosypose.integrated.multiview_predictor import MultiviewScenePredictor
+from cosypose.lib3d.rigid_mesh_database import MeshDataBase
 
 
 def prepare_candidates(candidates):
@@ -52,9 +55,36 @@ def prepare_cameras(cameras, view_ids):
     return cameras
 
 
-def merge_poses(candidates, cameras):
+def merge_poses(candidates, cameras, object_path):
     candidates = prepare_candidates(candidates)
+    candidates.infos['group_id'] = 0
+
     view_ids = np.unique(candidates.infos['view_id'])
     cameras = prepare_cameras(cameras, view_ids)
+
+    cameras.infos['scene_id'] = 0
+    cameras.infos['batch_im_id'] = np.arange(len(view_ids))
+
+    object_ds = BOPObjectDataset(object_path)
+    mesh_db = MeshDataBase.from_object_ds(object_ds)
+
+    mv_predictor = MultiviewScenePredictor(mesh_db)
+    predictions = mv_predictor.predict_scene_state(candidates, cameras,
+                                                   score_th=0.3,
+                                                   use_known_camera_poses=False,
+                                                   ransac_n_iter=2000,
+                                                   ransac_dist_threshold=0.02,
+                                                   ba_n_iter=10)
+
+    objects = predictions['scene/objects']
+    cameras = predictions['scene/cameras']
+    reproj = predictions['ba_output']
+
+    print("-------------------")
+    print(objects)
+    print("-------------------")
+    print(cameras)
+    print("-------------------")
+    print(reproj)
 
     return None
