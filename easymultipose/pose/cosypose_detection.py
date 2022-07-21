@@ -25,7 +25,7 @@ torch.backends.cudnn.benchmark = False
 
 
 def load_detector(path):
-    cfg = yaml.load((path / 'config.yaml').read_text(), Loader=yaml.FullLoader)
+    cfg = yaml.load((path / 'config.yaml').read_text(), Loader=yaml.UnsafeLoader)
     cfg = check_update_config_detector(cfg)
     label_to_category_id = cfg.label_to_category_id
     model = create_model_detector(cfg, len(label_to_category_id))
@@ -41,7 +41,7 @@ def load_detector(path):
 
 def load_pose_models(models_path, coarse_path, refiner_path=None, n_workers=8):
     cfg_path = coarse_path / 'config.yaml'
-    cfg = yaml.load(cfg_path.read_text(), Loader=yaml.FullLoader)
+    cfg = yaml.load(cfg_path.read_text(), Loader=yaml.UnsafeLoader)
     cfg = check_update_config_pose(cfg)
     object_ds = BOPObjectDataset(models_path)
     mesh_db = MeshDataBase.from_object_ds(object_ds)
@@ -52,7 +52,7 @@ def load_pose_models(models_path, coarse_path, refiner_path=None, n_workers=8):
         if path is None:
             return
         cfg_path = path / 'config.yaml'
-        cfg = yaml.load(cfg_path.read_text(), Loader=yaml.FullLoader)
+        cfg = yaml.load(cfg_path.read_text(), Loader=yaml.UnsafeLoader)
         cfg = check_update_config_pose(cfg)
         if cfg.train_refiner:
             model = create_model_refiner(cfg, renderer=renderer, mesh_db=mesh_db_batched)
@@ -115,18 +115,18 @@ class CosyposeDetection(PoseDetection):
         if not data:
             return None
         for i in range(len(data)):
-            pose = data.poses[i].numpy()
+            pose = data.poses[i].numpy().tolist()
             predictions[data.infos.iloc[i].label] = (pose, data.infos.iloc[i].score)
         return predictions
 
 
-if __name__ == '__main__':
+def main():
     cosypose_detector = CosyposeDetection(
         models_path="/home/lars/PycharmProjects/EasyMultiPose/cosypose/local_data/bop_datasets/ycbv/models_bop-compat",
         detector_path="/home/lars/PycharmProjects/EasyMultiPose/cosypose/local_data/experiments/detector-bop-ycbv-pbr--970850",
         coarse_path="/home/lars/PycharmProjects/EasyMultiPose/cosypose/local_data/experiments/coarse-bop-ycbv-pbr--724183",
         refiner_path="/home/lars/PycharmProjects/EasyMultiPose/cosypose/local_data/experiments/refiner-bop-ycbv-pbr--604090")
-    path = "/home/lars/Downloads/images.jpeg"
+    path = "/home/lars/Downloads/Download.jpeg"
     img = Image.open(path)
     img = np.array(img)
     camera_k = np.array([[585.75607, 0, 320.5], \
@@ -135,5 +135,9 @@ if __name__ == '__main__':
     detection = cosypose_detector.detect(img, camera_k)
     print(detection)
     print()
-    print(merge_poses({1: detection}, {1: camera_k}, Path(
+    print(merge_poses({1: detection, 2: detection}, {1: camera_k, 2: camera_k}, Path(
         "/home/lars/PycharmProjects/EasyMultiPose/cosypose/local_data/bop_datasets/ycbv/models_bop-compat")))
+
+
+if __name__ == '__main__':
+    main()

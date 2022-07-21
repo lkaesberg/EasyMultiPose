@@ -5,5 +5,8 @@ setup(
     name='EasyMultiPose',
     version='1.0.0',
     description='EasyMultiPose',
-    packages=find_packages()
+    packages=find_packages(),
+    install_requires=[
+        'numpy', 'torch', 'yaml'
+    ]
 )

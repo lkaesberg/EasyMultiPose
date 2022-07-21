@@ -5,6 +5,7 @@ import cosypose.utils.tensor_collection as tc
 from cosypose.datasets.bop_object_datasets import BOPObjectDataset
 from cosypose.integrated.multiview_predictor import MultiviewScenePredictor
 from cosypose.lib3d.rigid_mesh_database import MeshDataBase
+from cosypose.scripts.run_custom_scenario import read_csv_candidates, read_cameras
 
 
 def prepare_candidates(candidates):
@@ -18,14 +19,16 @@ def prepare_candidates(candidates):
     translations = []
 
     for view_id in candidates:
+        if candidates[view_id] is None:
+            continue
         for obj_id in candidates[view_id]:
             view_ids.append(view_id)
             scene_ids.append(0)
             labels.append(obj_id)
             scores.append(candidates[view_id][obj_id][1])
-
-            rotations.append(candidates[view_id][obj_id][0][0:3, 0:3])
-            translations.append(candidates[view_id][obj_id][0][0:3, 3])
+            pose = np.array(candidates[view_id][obj_id][0])
+            rotations.append(pose[0:3, 0:3])
+            translations.append(pose[0:3, 3])
 
     infos = pd.DataFrame(data={"view_id": view_ids, "scene_id": scene_ids, "score": scores, "label": labels})
     print(infos)
@@ -61,7 +64,6 @@ def merge_poses(candidates, cameras, object_path):
 
     view_ids = np.unique(candidates.infos['view_id'])
     cameras = prepare_cameras(cameras, view_ids)
-
     cameras.infos['scene_id'] = 0
     cameras.infos['batch_im_id'] = np.arange(len(view_ids))
 
