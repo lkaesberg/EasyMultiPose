@@ -1,5 +1,6 @@
 from pathlib import Path
 
+import cv2
 import numpy as np
 import torch
 import yaml
@@ -19,6 +20,7 @@ from easymultipose.pose.merge_poses import merge_poses
 
 from easymultipose.pose.pose_detection import PoseDetection
 from easymultipose.urdf_cfg import set_urdf_path
+from easymultipose.visualization_3d import Visualize3D
 
 torch.backends.cudnn.deterministic = True
 torch.backends.cudnn.benchmark = False
@@ -127,12 +129,16 @@ def main():
         coarse_path="/home/lars/PycharmProjects/EasyMultiPose/cosypose/local_data/experiments/coarse-bop-ycbv-pbr--724183",
         refiner_path="/home/lars/PycharmProjects/EasyMultiPose/cosypose/local_data/experiments/refiner-bop-ycbv-pbr--604090")
     path = "/home/lars/Downloads/Download.jpeg"
-    img = Image.open(path)
-    img = np.array(img)
+    img = cv2.imread(path)
+    img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
     camera_k = np.array([[585.75607, 0, 320.5], \
                          [0, 585.75607, 240.5], \
                          [0, 0, 1, ]])
     detection = cosypose_detector.detect(img, camera_k)
+    visualization = Visualize3D()
+
+    visualization.update(detection)
+
     print(detection)
     print()
     print(merge_poses({1: detection, 2: detection}, {1: camera_k, 2: camera_k}, Path(

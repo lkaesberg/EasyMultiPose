@@ -59,11 +59,11 @@ def prepare_cameras(cameras, view_ids):
 
 
 def merge_poses(candidates, cameras, object_path):
-    candidates = prepare_candidates(candidates)
+    candidates = prepare_candidates(candidates).float().cuda()
     candidates.infos['group_id'] = 0
 
     view_ids = np.unique(candidates.infos['view_id'])
-    cameras = prepare_cameras(cameras, view_ids)
+    cameras = prepare_cameras(cameras, view_ids).float().cuda()
     cameras.infos['scene_id'] = 0
     cameras.infos['batch_im_id'] = np.arange(len(view_ids))
 
@@ -82,11 +82,11 @@ def merge_poses(candidates, cameras, object_path):
     cameras = predictions['scene/cameras']
     reproj = predictions['ba_output']
 
-    print("-------------------")
+    print("------------------- OBJ")
     print(objects)
-    print("-------------------")
+    print("------------------- CAM")
     print(cameras)
-    print("-------------------")
+    print("------------------- REP")
     print(reproj)
 
     return None
