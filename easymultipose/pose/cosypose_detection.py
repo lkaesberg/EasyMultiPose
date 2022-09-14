@@ -1,10 +1,10 @@
+import os
 from pathlib import Path
 
 import cv2
 import numpy as np
 import torch
 import yaml
-from PIL import Image
 from cosypose.datasets.bop_object_datasets import BOPObjectDataset
 from cosypose.integrated.detector import Detector
 from cosypose.integrated.pose_predictor import CoarseRefinePosePredictor
@@ -20,7 +20,8 @@ from easymultipose.pose.merge_poses import merge_poses
 
 from easymultipose.pose.pose_detection import PoseDetection
 from easymultipose.urdf_cfg import set_urdf_path
-from easymultipose.visualization_3d import Visualize3D
+from easymultipose.visualize.visualization_3d import Visualize3D
+from easymultipose.visualize.visulaization_cv2 import VisualizeCV2
 
 torch.backends.cudnn.deterministic = True
 torch.backends.cudnn.benchmark = False
@@ -128,16 +129,18 @@ def main():
         detector_path="/home/lars/PycharmProjects/EasyMultiPose/cosypose/local_data/experiments/detector-bop-ycbv-pbr--970850",
         coarse_path="/home/lars/PycharmProjects/EasyMultiPose/cosypose/local_data/experiments/coarse-bop-ycbv-pbr--724183",
         refiner_path="/home/lars/PycharmProjects/EasyMultiPose/cosypose/local_data/experiments/refiner-bop-ycbv-pbr--604090")
-    path = "/home/lars/Downloads/Download.jpeg"
-    img = cv2.imread(path)
-    img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+    path = "/home/lars/Bachelor/datasets/tomato_can"
+
     camera_k = np.array([[585.75607, 0, 320.5], \
                          [0, 585.75607, 240.5], \
                          [0, 0, 1, ]])
-    detection = cosypose_detector.detect(img, camera_k)
-    visualization = Visualize3D()
 
-    visualization.update(detection)
+    visualization = VisualizeCV2()
+    for file in sorted(os.listdir(path)):
+        img_bgr = cv2.imread(path + "/" + file)
+        img = cv2.cvtColor(img_bgr, cv2.COLOR_BGR2RGB)
+        detection = cosypose_detector.detect(img, camera_k)
+        visualization.update(detection, img_bgr, camera_k)
 
     print(detection)
     print()
