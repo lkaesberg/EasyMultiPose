@@ -8,6 +8,7 @@ from mpl_toolkits.mplot3d import Axes3D
 from scipy.spatial.transform import Rotation
 
 bounding_boxes = {
+    "obj_000001": [[0.07, 0.12, 0.07], [0, 0, 0]],
     "obj_000008": [[0.04, 0.015, 0.04], [0, 0, 0]],
     "obj_000004": [[0.035, 0.05, 0.035], [0, 0, 0]],
     "obj_000014": [[0.04, 0.045, 0.04], [0, 0, 0]],
@@ -63,13 +64,13 @@ def draw_3d_bounding_box(frame, rotation_vector, translation_vector, camera_matr
                      (int(points2D[6][0][0]), int(points2D[6][0][1])), (255, 0, 0), 4)
 
     frame = cv2.line(frame, (int(points2D[0][0][0]), int(points2D[0][0][1])),
-                     (int(points2D[4][0][0]), int(points2D[4][0][1])), (255, 0, 0), 4)
+                     (int(points2D[4][0][0]), int(points2D[4][0][1])), (0, 255, 0), 4)
     frame = cv2.line(frame, (int(points2D[1][0][0]), int(points2D[1][0][1])),
-                     (int(points2D[5][0][0]), int(points2D[5][0][1])), (255, 0, 0), 4)
+                     (int(points2D[5][0][0]), int(points2D[5][0][1])), (0, 255, 0), 4)
     frame = cv2.line(frame, (int(points2D[2][0][0]), int(points2D[2][0][1])),
-                     (int(points2D[6][0][0]), int(points2D[6][0][1])), (255, 0, 0), 4)
+                     (int(points2D[6][0][0]), int(points2D[6][0][1])), (0, 255, 0), 4)
     frame = cv2.line(frame, (int(points2D[3][0][0]), int(points2D[3][0][1])),
-                     (int(points2D[7][0][0]), int(points2D[7][0][1])), (255, 0, 0), 4)
+                     (int(points2D[7][0][0]), int(points2D[7][0][1])), (0, 255, 0), 4)
 
     return frame
 
@@ -87,6 +88,7 @@ class VisualizeCV2:
         for obj_name in poses:
             pose = np.array(poses[obj_name][0])
             trans = pose[:3, 3]
+            trans = trans / 100
             rot = pose[:3, :3]
             rot = Rotation.from_matrix(rot).as_rotvec()
             if obj_name in bounding_boxes:

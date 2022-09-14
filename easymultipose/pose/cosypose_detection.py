@@ -1,5 +1,6 @@
 import os
 from pathlib import Path
+from time import sleep
 
 import cv2
 import numpy as np
@@ -21,7 +22,7 @@ from easymultipose.pose.merge_poses import merge_poses
 from easymultipose.pose.pose_detection import PoseDetection
 from easymultipose.urdf_cfg import set_urdf_path
 from easymultipose.visualize.visualization_3d import Visualize3D
-from easymultipose.visualize.visulaization_cv2 import VisualizeCV2
+from easymultipose.visualize.visualization_cv2 import VisualizeCV2
 
 torch.backends.cudnn.deterministic = True
 torch.backends.cudnn.benchmark = False
@@ -110,7 +111,7 @@ class CosyposeDetection(PoseDetection):
         if refiner_path:
             self.model, _ = load_pose_models(models_path, Path(coarse_path), Path(refiner_path), 4)
         else:
-            self.model, _ = load_pose_models(models_path, Path(coarse_path), Path(refiner_path), 4)
+            self.model, _ = load_pose_models(models_path, Path(coarse_path), n_workers=4)
 
     def detect(self, image, camera):
         data = inference(self.detector, self.model, image, camera)
@@ -124,12 +125,18 @@ class CosyposeDetection(PoseDetection):
 
 
 def main():
+    # cosypose_detector = CosyposeDetection(
+    #    models_path="/home/lars/PycharmProjects/EasyMultiPose/cosypose/local_data/bop_datasets/ycbv/models_bop-compat",
+    #    detector_path="/home/lars/PycharmProjects/EasyMultiPose/cosypose/local_data/experiments/detector-bop-ycbv-pbr--970850",
+    #    coarse_path="/home/lars/PycharmProjects/EasyMultiPose/cosypose/local_data/experiments/coarse-bop-ycbv-pbr--724183",
+    #    refiner_path="/home/lars/PycharmProjects/EasyMultiPose/cosypose/local_data/experiments/refiner-bop-ycbv-pbr--604090")
     cosypose_detector = CosyposeDetection(
-        models_path="/home/lars/PycharmProjects/EasyMultiPose/cosypose/local_data/bop_datasets/ycbv/models_bop-compat",
-        detector_path="/home/lars/PycharmProjects/EasyMultiPose/cosypose/local_data/experiments/detector-bop-ycbv-pbr--970850",
-        coarse_path="/home/lars/PycharmProjects/EasyMultiPose/cosypose/local_data/experiments/coarse-bop-ycbv-pbr--724183",
-        refiner_path="/home/lars/PycharmProjects/EasyMultiPose/cosypose/local_data/experiments/refiner-bop-ycbv-pbr--604090")
+        models_path="/home/lars/Bachelor/bop_dataset/models",
+        detector_path="/home/lars/Bachelor/detector_can",
+        coarse_path="/home/lars/Bachelor/model_cosy",
+        refiner_path="/home/lars/Bachelor/model_cosy")
     path = "/home/lars/Bachelor/datasets/tomato_can"
+    #path = "/home/lars/Bachelor/bop_dataset/train/000000/rgb"
 
     camera_k = np.array([[585.75607, 0, 320.5], \
                          [0, 585.75607, 240.5], \
@@ -137,6 +144,7 @@ def main():
 
     visualization = VisualizeCV2()
     for file in sorted(os.listdir(path)):
+        #sleep(1)
         img_bgr = cv2.imread(path + "/" + file)
         img = cv2.cvtColor(img_bgr, cv2.COLOR_BGR2RGB)
         detection = cosypose_detector.detect(img, camera_k)

@@ -53,7 +53,7 @@ def train_cosypose():
     cfg.resume_run_id = None
 
     cfg.object_ds_name = Path(
-        "/home/lars/Unity/6dposeestimation-datasetprovider/bop_dataset/models")
+        "/home/lars/Schreibtisch/Linux64/bop_dataset/models")
 
     urdf_path = cfg.object_ds_name / 'urdfs'
     if not urdf_path.exists():
@@ -63,10 +63,10 @@ def train_cosypose():
     set_urdf_path(cfg.urdf_ds_name)
 
     cfg.train_ds_names = [
-        (Path("/home/lars/Unity/6dposeestimation-datasetprovider/bop_dataset"), "train", 1)]
+        (Path("/home/lars/Schreibtisch/Linux64/bop_dataset"), "train", 1)]
     cfg.val_ds_names = cfg.train_ds_names
 
-    cfg.run_id = Path("/home/lars/Python/model_cosy")
+    cfg.run_id = Path("/media/lars/Volume/Bachelor/models/poseestimator_can")
 
     cfg.voc_folder = Path("/media/lars/Volume/Bachelor/VOCdevkit/VOC2012")
 
