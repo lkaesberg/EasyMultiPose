@@ -4,3 +4,7 @@
 [submodule "cosypose"]
 	path = cosypose
 	url = https://github.com/lkaesberg/CosyPose-Package.git
+[cosypose "bar1"]
+	master = master
+[efficientpose "bar2"]
+	master = master
