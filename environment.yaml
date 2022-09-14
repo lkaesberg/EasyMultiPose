@@ -1,4 +1,4 @@
-name: cosypose
+name: easymultipose
 channels:
    - conda-forge
    - pytorch
