@@ -6,8 +6,8 @@ git clone --recurse-submodules https://github.com/lkaesberg/EasyMultiPose.git
 cd EasyMultiPose
 conda env create -n easymultipose --file environment.yaml
 conda activate easymultipose
-wget http://host.robots.ox.ac.uk/pascal/VOC/voc2012/VOCtrainval_11-May-2012.tar
-tar -xvf VOCtrainval_11-May-2012.tar
+wget https://owncloud.gwdg.de/index.php/s/qX9eXVaB6aOkACi/download -O VOCdevkit.tar
+tar -xvf VOCdevkit.tar
 
 cd cosypose
 python setup.py install
