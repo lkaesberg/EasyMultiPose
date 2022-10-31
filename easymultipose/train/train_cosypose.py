@@ -1,3 +1,5 @@
+# Inspired by https://github.com/ylabbe/cosypose/issues/17
+
 import argparse
 from pathlib import Path
 
