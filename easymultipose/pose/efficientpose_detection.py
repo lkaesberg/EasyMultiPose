@@ -1,4 +1,5 @@
 from pathlib import Path
+from typing import List
 
 import cv2
 import numpy as np
@@ -6,6 +7,7 @@ from PIL import Image
 from efficientpose.inference import build_model_and_load_weights, preprocess, postprocess, allow_gpu_growth_memory
 from tqdm import tqdm
 
+from easymultipose.pose.detection import Detection
 from easymultipose.pose.pose_detection import PoseDetection
 
 
@@ -16,18 +18,18 @@ class EfficientposeDetection(PoseDetection):
         self.model, self.image_size = build_model_and_load_weights(phi, num_classes, score_threshold,
                                                                    weights_path.as_posix())
 
-    def detect(self, image, camera):
+    def detect(self, image, camera) -> List[Detection]:
         translation_scale_norm = 1000.0
         input_list, scale = preprocess(image, self.image_size, camera, translation_scale_norm)
 
         boxes, scores, labels, rotations, translations = self.model.predict_on_batch(input_list)
         boxes, scores, labels, rotations, translations = postprocess(boxes, scores, labels, rotations, translations,
                                                                      scale, self.score_threshold)
-        #print(boxes)
-        #print(scores)
-        #print(labels)
-        #print(rotations)
-        #print(translations)
+        # print(boxes)
+        # print(scores)
+        # print(labels)
+        # print(rotations)
+        # print(translations)
 
 
 if __name__ == '__main__':

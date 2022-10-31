@@ -1,6 +1,7 @@
 import os
 from pathlib import Path
 from time import sleep
+from typing import List
 
 import cv2
 import numpy as np
@@ -17,6 +18,7 @@ from cosypose.training.detector_models_cfg import create_model_detector
 from cosypose.training.pose_models_cfg import check_update_config as check_update_config_pose, \
     create_model_refiner, \
     create_model_coarse
+from easymultipose.pose.detection import Detection
 from easymultipose.pose.merge_poses import merge_poses
 
 from easymultipose.pose.pose_detection import PoseDetection
@@ -113,14 +115,14 @@ class CosyposeDetection(PoseDetection):
         else:
             self.model, _ = load_pose_models(models_path, Path(coarse_path), n_workers=4)
 
-    def detect(self, image, camera):
+    def detect(self, image, camera) -> List[Detection]:
         data = inference(self.detector, self.model, image, camera)
-        predictions = {}
+        predictions = []
         if not data:
-            return None
+            return []
         for i in range(len(data)):
-            pose = data.poses[i].numpy().tolist()
-            predictions[data.infos.iloc[i].label] = (pose, data.infos.iloc[i].score)
+            pose = data.poses[i].numpy()
+            predictions.append(Detection(data.infos.iloc[i].label, pose, data.infos.iloc[i].score))
         return predictions
 
 
@@ -131,24 +133,25 @@ def main():
     #    coarse_path="/home/lars/PycharmProjects/EasyMultiPose/cosypose/local_data/experiments/coarse-bop-ycbv-pbr--724183",
     #    refiner_path="/home/lars/PycharmProjects/EasyMultiPose/cosypose/local_data/experiments/refiner-bop-ycbv-pbr--604090")
     cosypose_detector = CosyposeDetection(
-        models_path="/home/lars/Bachelor/bop_dataset/models",
-        detector_path="/home/lars/Bachelor/detector_can",
-        coarse_path="/home/lars/Bachelor/model_cosy",
-        refiner_path="/home/lars/Bachelor/model_cosy")
+        models_path="/home/lars/Schreibtisch/bop_dataset_training_2/models",
+        detector_path="/media/lars/Volume/Bachelor/models/detector_can",
+        coarse_path="/media/lars/Volume/Bachelor/models/poseestimator_can_3",
+        refiner_path="/media/lars/Volume/Bachelor/models/poseestimator_can_3")
     path = "/home/lars/Bachelor/datasets/tomato_can"
-    #path = "/home/lars/Bachelor/bop_dataset/train/000000/rgb"
+    # path = "/home/lars/Schreibtisch/bop_dataset_training_2/train/000000/rgb"
 
-    camera_k = np.array([[585.75607, 0, 320.5], \
-                         [0, 585.75607, 240.5], \
+    camera_k = np.array([[665.75607, 0, 602.5], \
+                         [0, 665.75607, 384.5], \
                          [0, 0, 1, ]])
 
-    visualization = VisualizeCV2()
+    # visualization = VisualizeCV2()
     for file in sorted(os.listdir(path)):
-        #sleep(1)
+        # sleep(1)
         img_bgr = cv2.imread(path + "/" + file)
         img = cv2.cvtColor(img_bgr, cv2.COLOR_BGR2RGB)
         detection = cosypose_detector.detect(img, camera_k)
-        visualization.update(detection, img_bgr, camera_k)
+        # visualization.update(detection, img_bgr, camera_k)
+        break
 
     print(detection)
     print()
