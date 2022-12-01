@@ -82,7 +82,7 @@ def merge_poses(candidates, cameras, object_path):
     return objects
 
 
-class MultiCameraDetector:
+class MultiViewDetector:
     def __init__(self, detector: PoseDetection, object_path: Path):
         self.detector = detector
         self.object_path = object_path
